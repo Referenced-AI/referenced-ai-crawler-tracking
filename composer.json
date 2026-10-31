@@ -1,0 +1,22 @@
+{
+    "name": "referenced/ai-crawler-tracking",
+    "description": "Referenced - AI Crawler Tracking WordPress plugin",
+    "license": "GPL-2.0-or-later",
+    "require-dev": {
+        "pestphp/pest": "^3.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Referenced\\": "src/"
+        }
+    },
+    "scripts": {
+        "test": "pest"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable"
+}

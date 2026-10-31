@@ -1,0 +1,4 @@
+vendor/
+*.zip
+.phpunit.result.cache
+.phpunit.cache/
