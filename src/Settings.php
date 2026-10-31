@@ -2,6 +2,8 @@
 
 namespace Referenced;
 
+defined( 'ABSPATH' ) || exit;
+
 class Settings {
 
 	const PAGE  = 'referenced-ai-crawler-tracking';
@@ -43,13 +45,13 @@ class Settings {
 	}
 
 	/**
-	 * Create the token option with autoload "no" when it does not exist yet.
+	 * Create the token option with autoload off when it does not exist yet.
 	 * The activation hook does this too; this covers installs that predate it.
 	 */
 	private static function ensureTokenOption() {
 		// No registered default, so a missing row reads as false.
 		if ( false === get_option( 'referenced_token' ) ) {
-			add_option( 'referenced_token', '', '', 'no' );
+			add_option( 'referenced_token', '', '', false );
 		}
 	}
 
@@ -73,7 +75,7 @@ class Settings {
 		}
 
 		if ( '' === $submitted ) {
-			update_option( 'referenced_enabled', false );
+			update_option( 'referenced_enabled', '0' );
 			$running = false;
 
 			return '';
@@ -90,7 +92,7 @@ class Settings {
 			return $stored;
 		}
 
-		update_option( 'referenced_enabled', true );
+		update_option( 'referenced_enabled', '1' );
 		$running = false;
 
 		return $submitted;
@@ -102,17 +104,13 @@ class Settings {
 		}
 		check_admin_referer( 'referenced_send_now' );
 
-		referenced_send_hits();
+		$args = array( 'page' => self::PAGE );
+		if ( '' !== (string) get_option( 'referenced_token', '' ) ) {
+			referenced_send_hits();
+			$args['sent'] = 1;
+		}
 
-		wp_safe_redirect(
-			add_query_arg(
-				array(
-					'page' => self::PAGE,
-					'sent' => 1,
-				),
-				admin_url( 'options-general.php' )
-			)
-		);
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'options-general.php' ) ) );
 		exit;
 	}
 
@@ -122,19 +120,15 @@ class Settings {
 		}
 		check_admin_referer( 'referenced_disconnect' );
 
-		delete_option( 'referenced_token' );
-		add_option( 'referenced_token', '', '', 'no' );
-		update_option( 'referenced_enabled', false );
+		$args = array( 'page' => self::PAGE );
+		if ( '' !== (string) get_option( 'referenced_token', '' ) ) {
+			delete_option( 'referenced_token' );
+			add_option( 'referenced_token', '', '', false );
+			update_option( 'referenced_enabled', '0' );
+			$args['disconnected'] = 1;
+		}
 
-		wp_safe_redirect(
-			add_query_arg(
-				array(
-					'page'         => self::PAGE,
-					'disconnected' => 1,
-				),
-				admin_url( 'options-general.php' )
-			)
-		);
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'options-general.php' ) ) );
 		exit;
 	}
 
@@ -178,8 +172,6 @@ class Settings {
 				<div class="notice notice-success is-dismissible"><p><?php echo esc_html__( 'Disconnected. Tracking is off and the token is removed.', 'referenced-ai-crawler-tracking' ); ?></p></div>
 			<?php endif; ?>
 
-			<?php settings_errors( 'referenced_token' ); ?>
-
 			<p>
 				<?php echo esc_html__( 'This plugin counts visits from known AI crawlers and sends daily totals to Referenced. Each send contains: bot name, path, date, count, plugin version and WordPress version, and your home URL. Nothing about visitors is collected or sent.', 'referenced-ai-crawler-tracking' ); ?>
 				<a href="<?php echo esc_url( 'https://getreferenced.ai/privacy' ); ?>" target="_blank" rel="noopener"><?php echo esc_html__( 'Privacy', 'referenced-ai-crawler-tracking' ); ?></a>
@@ -206,23 +198,27 @@ class Settings {
 						</td>
 					</tr>
 				</table>
-				<?php submit_button( __( 'Save token', 'referenced-ai-crawler-tracking' ) ); ?>
+				<?php submit_button( __( 'Save token', 'referenced-ai-crawler-tracking' ), 'primary', 'referenced_save' ); ?>
 			</form>
 
 			<p><strong><?php echo esc_html__( 'Status:', 'referenced-ai-crawler-tracking' ); ?></strong> <?php echo esc_html( self::statusText() ); ?></p>
 
-			<div style="display:flex;gap:8px;align-items:center;">
-				<form method="post" action="<?php echo esc_url( $action ); ?>">
-					<input type="hidden" name="action" value="referenced_send_now" />
-					<?php wp_nonce_field( 'referenced_send_now' ); ?>
-					<?php submit_button( __( 'Send now', 'referenced-ai-crawler-tracking' ), 'primary', 'submit', false ); ?>
-				</form>
-				<form method="post" action="<?php echo esc_url( $action ); ?>">
-					<input type="hidden" name="action" value="referenced_disconnect" />
-					<?php wp_nonce_field( 'referenced_disconnect' ); ?>
-					<?php submit_button( __( 'Disconnect', 'referenced-ai-crawler-tracking' ), 'secondary', 'submit', false ); ?>
-				</form>
-			</div>
+			<?php if ( '' !== $token ) : ?>
+				<div style="display:flex;gap:8px;align-items:center;">
+					<form method="post" action="<?php echo esc_url( $action ); ?>">
+						<input type="hidden" name="action" value="referenced_send_now" />
+						<?php wp_nonce_field( 'referenced_send_now' ); ?>
+						<?php submit_button( __( 'Send now', 'referenced-ai-crawler-tracking' ), 'primary', 'referenced_send_now', false ); ?>
+					</form>
+					<form method="post" action="<?php echo esc_url( $action ); ?>">
+						<input type="hidden" name="action" value="referenced_disconnect" />
+						<?php wp_nonce_field( 'referenced_disconnect' ); ?>
+						<?php submit_button( __( 'Disconnect', 'referenced-ai-crawler-tracking' ), 'secondary', 'referenced_disconnect', false ); ?>
+					</form>
+				</div>
+			<?php else : ?>
+				<p><?php echo esc_html__( 'Save a token above to start sending.', 'referenced-ai-crawler-tracking' ); ?></p>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
