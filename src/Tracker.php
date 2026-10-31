@@ -7,207 +7,207 @@ namespace Referenced;
  *
  * Pure: no WordPress functions here.
  */
-final class Tracker
-{
-    /**
-     * Bundled copy of the server's detectable vocabulary (slug => user-agent token).
-     * The Referenced server owns this list; the plugin prefers the copy stored from
-     * the last server response and falls back to this one.
-     */
-    const DEFAULT_BOTS = [
-        'gptbot' => 'GPTBot',
-        'oai-searchbot' => 'OAI-SearchBot',
-        'chatgpt-user' => 'ChatGPT-User',
-        'oai-adsbot' => 'OAI-AdsBot',
-        'claudebot' => 'ClaudeBot',
-        'claude-searchbot' => 'Claude-SearchBot',
-        'claude-user' => 'Claude-User',
-        'perplexitybot' => 'PerplexityBot',
-        'perplexity-user' => 'Perplexity-User',
-        'googlebot' => 'Googlebot',
-        'applebot' => 'Applebot',
-        'bingbot' => 'Bingbot',
-        'bravebot' => 'Bravebot',
-        'amazonbot' => 'Amazonbot',
-        'meta-externalagent' => 'Meta-ExternalAgent',
-        'meta-webindexer' => 'Meta-WebIndexer',
-        'meta-externalfetcher' => 'Meta-ExternalFetcher',
-        'bytespider' => 'Bytespider',
-        'cohere-ai' => 'Cohere-AI',
-        'diffbot' => 'Diffbot',
-        'ccbot' => 'CCBot',
-    ];
+final class Tracker {
 
-    /**
-     * Return the slug of the first vocabulary token found (case-insensitively) in the
-     * user agent, or null when none match or the agent is empty.
-     *
-     * Order matters: the vocabulary is walked in order and the first match wins, so
-     * the server must list a more specific token before any token it contains.
-     *
-     * @param array<string,string> $vocabulary slug => user-agent token
-     */
-    public static function matchBot(string $userAgent, array $vocabulary): ?string
-    {
-        if ($userAgent === '') {
-            return null;
-        }
+	/**
+	 * Bundled copy of the server's detectable vocabulary (slug => user-agent token).
+	 * The Referenced server owns this list; the plugin prefers the copy stored from
+	 * the last server response and falls back to this one.
+	 */
+	const DEFAULT_BOTS = array(
+		'gptbot'               => 'GPTBot',
+		'oai-searchbot'        => 'OAI-SearchBot',
+		'chatgpt-user'         => 'ChatGPT-User',
+		'oai-adsbot'           => 'OAI-AdsBot',
+		'claudebot'            => 'ClaudeBot',
+		'claude-searchbot'     => 'Claude-SearchBot',
+		'claude-user'          => 'Claude-User',
+		'perplexitybot'        => 'PerplexityBot',
+		'perplexity-user'      => 'Perplexity-User',
+		'googlebot'            => 'Googlebot',
+		'applebot'             => 'Applebot',
+		'bingbot'              => 'Bingbot',
+		'bravebot'             => 'Bravebot',
+		'amazonbot'            => 'Amazonbot',
+		'meta-externalagent'   => 'Meta-ExternalAgent',
+		'meta-webindexer'      => 'Meta-WebIndexer',
+		'meta-externalfetcher' => 'Meta-ExternalFetcher',
+		'bytespider'           => 'Bytespider',
+		'cohere-ai'            => 'Cohere-AI',
+		'diffbot'              => 'Diffbot',
+		'ccbot'                => 'CCBot',
+	);
 
-        foreach ($vocabulary as $slug => $token) {
-            if ($token !== '' && stripos($userAgent, (string) $token) !== false) {
-                return (string) $slug;
-            }
-        }
+	/**
+	 * Return the slug of the first vocabulary token found (case-insensitively) in the
+	 * user agent, or null when none match or the agent is empty.
+	 *
+	 * Order matters: the vocabulary is walked in order and the first match wins, so
+	 * the server must list a more specific token before any token it contains.
+	 *
+	 * @param array<string,string> $vocabulary slug => user-agent token
+	 */
+	public static function matchBot( string $userAgent, array $vocabulary ): ?string {
+		if ( '' === $userAgent ) {
+			return null;
+		}
 
-        return null;
-    }
+		foreach ( $vocabulary as $slug => $token ) {
+			if ( '' !== $token && stripos( $userAgent, (string) $token ) !== false ) {
+				return (string) $slug;
+			}
+		}
 
-    /**
-     * Reduce a request URI to the path the server would store, or null when the
-     * server would drop it. Mirrors the server's ingest normalisation exactly.
-     */
-    public static function normalisePath(string $requestUri): ?string
-    {
-        if ($requestUri === '') {
-            return null;
-        }
+		return null;
+	}
 
-        $path = parse_url($requestUri, PHP_URL_PATH);
+	/**
+	 * Reduce a request URI to the path the server would store, or null when the
+	 * server would drop it. Mirrors the server's ingest normalisation exactly.
+	 */
+	public static function normalisePath( string $requestUri ): ?string {
+		if ( '' === $requestUri ) {
+			return null;
+		}
 
-        if (! is_string($path) || $path === '') {
-            return null;
-        }
+		$path = parse_url( $requestUri, PHP_URL_PATH ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- pure class, also unit-tested without WordPress loaded.
 
-        if (strpos($path, '/') !== 0) {
-            $path = '/'.$path;
-        }
+		if ( ! is_string( $path ) || '' === $path ) {
+			return null;
+		}
 
-        return mb_substr($path, 0, 500);
-    }
+		if ( strpos( $path, '/' ) !== 0 ) {
+			$path = '/' . $path;
+		}
 
-    /**
-     * Paths WordPress owns, which are never reported. Takes a normalised path.
-     */
-    public static function isExcludedPath(string $path): bool
-    {
-        if (in_array($path, ['/wp-login.php', '/xmlrpc.php', '/wp-cron.php', '/wp-json', '/wp-admin'], true)) {
-            return true;
-        }
+		return mb_substr( $path, 0, 500 );
+	}
 
-        return strpos($path, '/wp-json/') === 0 || strpos($path, '/wp-admin/') === 0;
-    }
+	/**
+	 * Paths WordPress owns, which are never reported. Takes a normalised path.
+	 */
+	public static function isExcludedPath( string $path ): bool {
+		if ( in_array( $path, array( '/wp-login.php', '/xmlrpc.php', '/wp-cron.php', '/wp-json', '/wp-admin' ), true ) ) {
+			return true;
+		}
 
-    /**
-     * The two UTC dates the plugin sends: today and yesterday.
-     *
-     * @return array{today:string,yesterday:string}
-     */
-    public static function sendDates(int $timestamp): array
-    {
-        return [
-            'today' => gmdate('Y-m-d', $timestamp),
-            'yesterday' => gmdate('Y-m-d', $timestamp - 86400),
-        ];
-    }
+		return strpos( $path, '/wp-json/' ) === 0 || strpos( $path, '/wp-admin/' ) === 0;
+	}
 
-    /**
-     * Split local rows into request bodies of at most 500 hits. Always returns at
-     * least one body, so an empty list still produces the heartbeat.
-     *
-     * @param array<int,array{date:string,bot:string,path:string,count:mixed}> $rows
-     * @param array<string,mixed> $plugin
-     * @return array<int,array{hits:array,plugin:array}>
-     */
-    public static function buildPayloads(array $rows, array $plugin): array
-    {
-        $hits = [];
-        foreach ($rows as $row) {
-            $hits[] = [
-                'date' => (string) $row['date'],
-                'bot' => (string) $row['bot'],
-                'path' => (string) $row['path'],
-                'count' => (int) $row['count'],
-            ];
-        }
+	/**
+	 * The two UTC dates the plugin sends: today and yesterday.
+	 *
+	 * @return array{today:string,yesterday:string}
+	 */
+	public static function sendDates( int $timestamp ): array {
+		return array(
+			'today'     => gmdate( 'Y-m-d', $timestamp ),
+			'yesterday' => gmdate( 'Y-m-d', $timestamp - 86400 ),
+		);
+	}
 
-        if ($hits === []) {
-            return [['hits' => [], 'plugin' => $plugin]];
-        }
+	/**
+	 * Split local rows into request bodies of at most 500 hits. Always returns at
+	 * least one body, so an empty list still produces the heartbeat.
+	 *
+	 * @param array<int,array{date:string,bot:string,path:string,count:mixed}> $rows
+	 * @param array<string,mixed>                                              $plugin
+	 * @return array<int,array{hits:array,plugin:array}>
+	 */
+	public static function buildPayloads( array $rows, array $plugin ): array {
+		$hits = array();
+		foreach ( $rows as $row ) {
+			$hits[] = array(
+				'date'  => (string) $row['date'],
+				'bot'   => (string) $row['bot'],
+				'path'  => (string) $row['path'],
+				'count' => (int) $row['count'],
+			);
+		}
 
-        $bodies = [];
-        foreach (array_chunk($hits, 500) as $chunk) {
-            $bodies[] = ['hits' => $chunk, 'plugin' => $plugin];
-        }
+		if ( array() === $hits ) {
+			return array(
+				array(
+					'hits'   => array(),
+					'plugin' => $plugin,
+				),
+			);
+		}
 
-        return $bodies;
-    }
+		$bodies = array();
+		foreach ( array_chunk( $hits, 500 ) as $chunk ) {
+			$bodies[] = array(
+				'hits'   => $chunk,
+				'plugin' => $plugin,
+			);
+		}
 
-    /**
-     * The UTC date seven days before the timestamp; local rows dated before it are deleted.
-     */
-    public static function pruneCutoff(int $timestamp): string
-    {
-        return gmdate('Y-m-d', $timestamp - 7 * 86400);
-    }
+		return $bodies;
+	}
 
-    /**
-     * Return the server's vocabulary when it is well formed, otherwise null so the
-     * caller keeps what it has. Rejects anything that could match every request.
-     *
-     * @param mixed $bots
-     */
-    public static function acceptVocabulary($bots): ?array
-    {
-        if (! is_array($bots) || $bots === []) {
-            return null;
-        }
+	/**
+	 * The UTC date seven days before the timestamp; local rows dated before it are deleted.
+	 */
+	public static function pruneCutoff( int $timestamp ): string {
+		return gmdate( 'Y-m-d', $timestamp - 7 * 86400 );
+	}
 
-        foreach ($bots as $slug => $token) {
-            if (! is_string($slug) || ! preg_match('/\A[a-z0-9-]{1,40}\z/', $slug)) {
-                return null;
-            }
-            if (! is_string($token) || trim($token) === '' || strlen($token) > 60) {
-                return null;
-            }
-        }
+	/**
+	 * Return the server's vocabulary when it is well formed, otherwise null so the
+	 * caller keeps what it has. Rejects anything that could match every request.
+	 *
+	 * @param mixed $bots
+	 */
+	public static function acceptVocabulary( $bots ): ?array {
+		if ( ! is_array( $bots ) || array() === $bots ) {
+			return null;
+		}
 
-        return $bots;
-    }
+		foreach ( $bots as $slug => $token ) {
+			if ( ! is_string( $slug ) || ! preg_match( '/\A[a-z0-9-]{1,40}\z/', $slug ) ) {
+				return null;
+			}
+			if ( ! is_string( $token ) || trim( $token ) === '' || strlen( $token ) > 60 ) {
+				return null;
+			}
+		}
 
-    /**
-     * One-line outcome of the last send, for the settings screen.
-     */
-    public static function statusLine(int $httpCode, string $body, int $timestamp): string
-    {
-        $data = json_decode($body, true);
-        if (! is_array($data)) {
-            $data = [];
-        }
+		return $bots;
+	}
 
-        if ($httpCode === 200) {
-            $accepted = isset($data['accepted']) && is_numeric($data['accepted']) ? (int) $data['accepted'] : 0;
+	/**
+	 * One-line outcome of the last send, for the settings screen.
+	 */
+	public static function statusLine( int $httpCode, string $body, int $timestamp ): string {
+		$data = json_decode( $body, true );
+		if ( ! is_array( $data ) ) {
+			$data = array();
+		}
 
-            return 'Sent '.$accepted.' rows at '.gmdate('H:i', $timestamp).' UTC';
-        }
+		if ( 200 === $httpCode ) {
+			$accepted = isset( $data['accepted'] ) && is_numeric( $data['accepted'] ) ? (int) $data['accepted'] : 0;
 
-        if ($httpCode === 401) {
-            return 'Token rejected. Check it in Referenced → Settings → Connections.';
-        }
+			return 'Sent ' . $accepted . ' rows at ' . gmdate( 'H:i', $timestamp ) . ' UTC';
+		}
 
-        if ($httpCode === 403) {
-            return isset($data['message']) && is_string($data['message']) && $data['message'] !== ''
-                ? $data['message']
-                : 'Account inactive.';
-        }
+		if ( 401 === $httpCode ) {
+			return 'Token rejected. Check it in Referenced → Settings → Connections.';
+		}
 
-        if ($httpCode === 429) {
-            return 'Throttled; will retry next hour.';
-        }
+		if ( 403 === $httpCode ) {
+			return isset( $data['message'] ) && is_string( $data['message'] ) && '' !== $data['message']
+				? $data['message']
+				: 'Account inactive.';
+		}
 
-        if ($httpCode === 0) {
-            return 'Could not reach Referenced.';
-        }
+		if ( 429 === $httpCode ) {
+			return 'Throttled; will retry next hour.';
+		}
 
-        return 'HTTP '.$httpCode;
-    }
+		if ( 0 === $httpCode ) {
+			return 'Could not reach Referenced.';
+		}
+
+		return 'HTTP ' . $httpCode;
+	}
 }

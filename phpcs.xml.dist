@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<ruleset name="Referenced AI Crawler Tracking">
+	<description>WordPress Coding Standards for the shipped plugin code.</description>
+	<file>referenced-ai-crawler-tracking.php</file>
+	<file>src</file>
+	<file>uninstall.php</file>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/tests/*</exclude-pattern>
+	<exclude-pattern>*/bin/*</exclude-pattern>
+	<arg name="extensions" value="php"/>
+	<arg value="ps"/>
+	<config name="minimum_supported_wp_version" value="6.0"/>
+	<rule ref="WordPress">
+		<!-- Naming and docblock style only. The camelCase class API is exercised by the tests and PSR-4 autoloading; renaming it would be a behavioural refactor, not a lint fix. -->
+		<exclude name="WordPress.Files.FileName"/>
+		<exclude name="WordPress.NamingConventions.ValidFunctionName"/>
+		<exclude name="WordPress.NamingConventions.ValidVariableName"/>
+		<exclude name="Squiz.Commenting"/>
+		<exclude name="Generic.Commenting.DocComment"/>
+	</rule>
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="referenced-ai-crawler-tracking"/>
+			</property>
+		</properties>
+	</rule>
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="referenced"/>
+				<element value="Referenced"/>
+				<element value="REFERENCED"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

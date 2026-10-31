@@ -3,7 +3,9 @@
     "description": "Referenced - AI Crawler Tracking WordPress plugin",
     "license": "GPL-2.0-or-later",
     "require-dev": {
-        "pestphp/pest": "^3.0"
+        "pestphp/pest": "^3.0",
+        "wp-coding-standards/wpcs": "^3.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.2"
     },
     "autoload-dev": {
         "psr-4": {
@@ -11,11 +13,13 @@
         }
     },
     "scripts": {
-        "test": "pest"
+        "test": "pest",
+        "lint": "phpcs"
     },
     "config": {
         "allow-plugins": {
-            "pestphp/pest-plugin": true
+            "pestphp/pest-plugin": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         }
     },
     "minimum-stability": "stable"
