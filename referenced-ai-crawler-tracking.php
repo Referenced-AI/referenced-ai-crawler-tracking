@@ -65,6 +65,9 @@ function referenced_activate()
   UNIQUE KEY hit (date,bot,path(191))
 ) {$charset};");
 
+    // Token must never autoload; create it up front so the Settings API cannot autoload it on first save.
+    add_option('referenced_token', '', '', 'no');
+
     if (! wp_next_scheduled('referenced_send_hits')) {
         wp_schedule_event(time(), 'hourly', 'referenced_send_hits');
     }
