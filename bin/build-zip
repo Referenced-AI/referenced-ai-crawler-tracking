@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Builds the release zip: referenced-ai-crawler-tracking.zip in the repo root.
+set -euo pipefail
+
+SLUG="referenced-ai-crawler-tracking"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+VERSION="$(sed -n 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*\(.*[^[:space:]]\)[[:space:]]*$/\1/p' "$SLUG.php" | head -n1)"
+if [ -z "$VERSION" ]; then
+	echo "Could not read Version from $SLUG.php" >&2
+	exit 1
+fi
+
+STAGE="$(mktemp -d)"
+trap 'rm -rf "$STAGE"' EXIT
+mkdir "$STAGE/$SLUG"
+cp "$SLUG.php" uninstall.php readme.txt LICENSE "$STAGE/$SLUG/"
+cp -R src "$STAGE/$SLUG/src"
+
+rm -f "$ROOT/$SLUG.zip"
+(cd "$STAGE" && zip -qr -X "$ROOT/$SLUG.zip" "$SLUG")
+
+if unzip -l "$ROOT/$SLUG.zip" | grep -E '/(tests|vendor)/' >/dev/null; then
+	echo "Zip contains tests/ or vendor/ entries" >&2
+	exit 1
+fi
+
+SIZE="$(wc -c < "$ROOT/$SLUG.zip" | tr -d ' ')"
+echo "Built $SLUG.zip, version $VERSION, $SIZE bytes"
