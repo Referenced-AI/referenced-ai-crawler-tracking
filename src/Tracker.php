@@ -61,4 +61,39 @@ final class Tracker
 
         return null;
     }
+
+    /**
+     * Reduce a request URI to the path the server would store, or null when the
+     * server would drop it. Mirrors the server's ingest normalisation exactly.
+     */
+    public static function normalisePath(string $requestUri): ?string
+    {
+        if ($requestUri === '') {
+            return null;
+        }
+
+        $path = parse_url($requestUri, PHP_URL_PATH);
+
+        if (! is_string($path) || $path === '') {
+            return null;
+        }
+
+        if (strpos($path, '/') !== 0) {
+            $path = '/'.$path;
+        }
+
+        return mb_substr($path, 0, 500);
+    }
+
+    /**
+     * Paths WordPress owns, which are never reported. Takes a normalised path.
+     */
+    public static function isExcludedPath(string $path): bool
+    {
+        if (in_array($path, ['/wp-login.php', '/xmlrpc.php', '/wp-cron.php'], true)) {
+            return true;
+        }
+
+        return strpos($path, '/wp-json/') === 0 || strpos($path, '/wp-admin/') === 0;
+    }
 }
