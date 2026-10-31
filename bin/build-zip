@@ -12,11 +12,19 @@ if [ -z "$VERSION" ]; then
 	exit 1
 fi
 
+if [ -n "$(git status --porcelain)" ]; then
+	echo "Working tree is dirty; commit or stash first so uncommitted edits cannot ship" >&2
+	exit 1
+fi
+
+# Build from the committed tree, never the working directory.
 STAGE="$(mktemp -d)"
-trap 'rm -rf "$STAGE"' EXIT
+SRC="$(mktemp -d)"
+trap 'rm -rf "$STAGE" "$SRC"' EXIT
+git archive HEAD | tar -x -C "$SRC"
 mkdir "$STAGE/$SLUG"
-cp "$SLUG.php" uninstall.php readme.txt LICENSE "$STAGE/$SLUG/"
-cp -R src "$STAGE/$SLUG/src"
+(cd "$SRC" && cp "$SLUG.php" uninstall.php readme.txt LICENSE "$STAGE/$SLUG/")
+cp -R "$SRC/src" "$STAGE/$SLUG/src"
 
 rm -f "$ROOT/$SLUG.zip"
 (cd "$STAGE" && zip -qr -X "$ROOT/$SLUG.zip" "$SLUG")

@@ -23,7 +23,7 @@ You need a Referenced account (getreferenced.ai) and a connection token. Until y
 1. Upload the plugin zip under Plugins → Add New → Upload Plugin, or install it from Plugins → Add New once it is listed. Then activate it.
 2. In Referenced, open Settings → Connections and create a WordPress token.
 3. In WordPress, open Settings → Referenced and paste the token.
-4. The first report arrives within the hour. Use "Send now" to send one straight away.
+4. The first report arrives within about an hour of your site's next visits (WordPress runs scheduled tasks on traffic). Use "Send now" in Settings → Referenced to send at once.
 
 == Frequently Asked Questions ==
 
@@ -37,7 +37,11 @@ Only the following, and only after you have saved a token: the bot name, the pag
 
 = Does it slow my site down? =
 
-No. Each request costs one string comparison against the list of known crawlers. A single row is written to the database only when a known crawler matched.
+No. Each request costs a handful of cheap string comparisons (about twenty substring checks) and one small row write only when a known crawler matched.
+
+= Why does every page show as "/" with plain permalinks? =
+
+With plain permalinks (`/?p=123`) the page is identified by its query string, and query strings are not sent. Every page is then reported as `/`. Pretty permalinks (Settings → Permalinks) give each page its own path.
 
 = Can I stop it? =
 
