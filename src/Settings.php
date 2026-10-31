@@ -31,7 +31,6 @@ class Settings
         register_setting(self::GROUP, 'referenced_token', [
             'type' => 'string',
             'sanitize_callback' => [__CLASS__, 'sanitizeToken'],
-            'default' => '',
         ]);
     }
 
@@ -49,7 +48,8 @@ class Settings
      */
     private static function ensureTokenOption()
     {
-        if (get_option('referenced_token', null) === null) {
+        // No registered default, so a missing row reads as false.
+        if (false === get_option('referenced_token')) {
             add_option('referenced_token', '', '', 'no');
         }
     }
@@ -134,6 +134,10 @@ class Settings
         }
 
         $status = isset($last['status']) ? sanitize_text_field((string) $last['status']) : '';
+        // A successful send's status already carries the time; print it once.
+        if (strpos($status, ' UTC') !== false) {
+            return $status;
+        }
         $at = gmdate('Y-m-d H:i', (int) $last['at']) . ' UTC';
 
         /* translators: 1: status message, 2: UTC date and time */
