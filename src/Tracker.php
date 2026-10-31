@@ -163,10 +163,10 @@ final class Tracker
         }
 
         foreach ($bots as $slug => $token) {
-            if (! preg_match('/^[a-z0-9-]{1,40}$/', (string) $slug)) {
+            if (! is_string($slug) || ! preg_match('/\A[a-z0-9-]{1,40}\z/', $slug)) {
                 return null;
             }
-            if (! is_string($token) || $token === '' || strlen($token) > 60) {
+            if (! is_string($token) || trim($token) === '' || strlen($token) > 60) {
                 return null;
             }
         }

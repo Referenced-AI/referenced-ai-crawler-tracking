@@ -64,6 +64,9 @@ it('rejects a malformed vocabulary', function ($bots) {
     [['gptbot' => str_repeat('x', 61)]],
     [['gptbot' => 'GPTBot', 'x' => '']],
     ['string'],
+    [['gptbot', 'claudebot']],
+    [["gptbot\n" => 'GPTBot']],
+    [['gptbot' => ' ']],
 ]);
 
 it('builds status lines', function (int $code, string $body, string $expected) {
