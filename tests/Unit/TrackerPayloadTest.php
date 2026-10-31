@@ -72,12 +72,76 @@ it('rejects a malformed vocabulary', function ($bots) {
 it('builds status lines', function (int $code, string $body, string $expected) {
     expect(Tracker::statusLine($code, $body, strtotime('2026-11-20 14:05:00 UTC')))->toBe($expected);
 })->with([
-    [200, '{"accepted":12,"dropped":0}', 'Sent 12 rows at 14:05 UTC'],
-    [200, 'not json', 'Sent 0 rows at 14:05 UTC'],
     [401, '{"message":"Unauthorized."}', 'Token rejected. Check it in Referenced → Settings → Connections.'],
     [403, '{"message":"Account inactive."}', 'Account inactive.'],
     [403, '', 'Account inactive.'],
     [429, '{"message":"Too many requests."}', 'Throttled; will retry next hour.'],
     [0, '', 'Could not reach Referenced.'],
+    [422, '{"message":"Too many hits."}', 'HTTP 422'],
     [500, 'oops', 'HTTP 500'],
 ]);
+
+it('prints the summed accepted total on a 200 status line', function () {
+    $at = strtotime('2026-11-20 14:05:00 UTC');
+
+    expect(Tracker::statusLine(200, '', $at, 12))->toBe('Sent 12 rows at 14:05 UTC')
+        ->and(Tracker::statusLine(200, '', $at))->toBe('Sent 0 rows at 14:05 UTC');
+});
+
+it('appends the transport error to the unreachable status line', function () {
+    $at = strtotime('2026-11-20 14:05:00 UTC');
+
+    expect(Tracker::statusLine(0, '', $at, 0, 'cURL error 28: timed out'))->toBe('Could not reach Referenced: cURL error 28: timed out')
+        ->and(Tracker::statusLine(0, '', $at, 0, ''))->toBe('Could not reach Referenced.');
+});
+
+it('sends exactly 500 rows as one body', function () {
+    $rows = [];
+    for ($i = 0; $i < 500; $i++) {
+        $rows[] = ['date' => '2026-11-20', 'bot' => 'gptbot', 'path' => '/p'.$i, 'count' => 1];
+    }
+
+    expect(array_map(fn ($b) => count($b['hits']), Tracker::buildPayloads($rows, [])))->toBe([500]);
+});
+
+it('sends exactly 1000 rows as two bodies with no empty trailing body', function () {
+    $rows = [];
+    for ($i = 0; $i < 1000; $i++) {
+        $rows[] = ['date' => '2026-11-20', 'bot' => 'gptbot', 'path' => '/p'.$i, 'count' => 1];
+    }
+
+    expect(array_map(fn ($b) => count($b['hits']), Tracker::buildPayloads($rows, [])))->toBe([500, 500]);
+});
+
+it('clamps counts to the server maximum instead of losing the row', function () {
+    $bodies = Tracker::buildPayloads([
+        ['date' => '2026-11-20', 'bot' => 'gptbot', 'path' => '/a', 'count' => '250000'],
+        ['date' => '2026-11-20', 'bot' => 'gptbot', 'path' => '/b', 'count' => 100000],
+        ['date' => '2026-11-20', 'bot' => 'gptbot', 'path' => '/c', 'count' => 99999],
+    ], []);
+
+    expect(array_column($bodies[0]['hits'], 'count'))->toBe([100000, 100000, 99999]);
+});
+
+it('sums accepted across response bodies', function () {
+    $bodies = ['{"accepted":3}', '{"accepted":null}', '{"accepted":"5"}', '{"accepted":-3}', 'not json', '', '{"dropped":1}'];
+
+    expect(Tracker::sumAccepted($bodies))->toBe(8)
+        ->and(Tracker::sumAccepted([]))->toBe(0);
+});
+
+it('chooses the stored vocabulary only when it is a non-empty array', function ($stored, $expected) {
+    expect(Tracker::vocabulary($stored))->toBe($expected);
+})->with([
+    [null, Tracker::DEFAULT_BOTS],
+    [false, Tracker::DEFAULT_BOTS],
+    [[], Tracker::DEFAULT_BOTS],
+    ['gptbot', Tracker::DEFAULT_BOTS],
+    [['custom' => 'CustomBot'], ['custom' => 'CustomBot']],
+]);
+
+it('rejects tokens shorter than three characters', function () {
+    expect(Tracker::acceptVocabulary(['data' => 'ai']))->toBeNull()
+        ->and(Tracker::acceptVocabulary(['dataset' => 'a']))->toBeNull()
+        ->and(Tracker::acceptVocabulary(['abc' => 'abc']))->toBe(['abc' => 'abc']);
+});

@@ -2,6 +2,8 @@
 
 namespace Referenced;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Decides whether a request came from an AI crawler.
  *
@@ -37,6 +39,21 @@ final class Tracker {
 		'diffbot'              => 'Diffbot',
 		'ccbot'                => 'CCBot',
 	);
+
+	/**
+	 * The server drops any row whose count is above this, so larger local counts are clamped to keep the row.
+	 */
+	const MAX_COUNT = 100000;
+
+	/**
+	 * The vocabulary to match against: the copy stored from the last server response
+	 * (already validated when stored) when it is a non-empty array, else the bundled one.
+	 *
+	 * @param mixed $stored
+	 */
+	public static function vocabulary( $stored ): array {
+		return is_array( $stored ) && array() !== $stored ? $stored : self::DEFAULT_BOTS;
+	}
 
 	/**
 	 * Return the slug of the first vocabulary token found (case-insensitively) in the
@@ -121,7 +138,7 @@ final class Tracker {
 				'date'  => (string) $row['date'],
 				'bot'   => (string) $row['bot'],
 				'path'  => (string) $row['path'],
-				'count' => (int) $row['count'],
+				'count' => min( self::MAX_COUNT, (int) $row['count'] ),
 			);
 		}
 
@@ -167,7 +184,7 @@ final class Tracker {
 			if ( ! is_string( $slug ) || ! preg_match( '/\A[a-z0-9-]{1,40}\z/', $slug ) ) {
 				return null;
 			}
-			if ( ! is_string( $token ) || trim( $token ) === '' || strlen( $token ) > 60 ) {
+			if ( ! is_string( $token ) || trim( $token ) === '' || strlen( $token ) < 3 || strlen( $token ) > 60 ) {
 				return null;
 			}
 		}
@@ -176,17 +193,36 @@ final class Tracker {
 	}
 
 	/**
-	 * One-line outcome of the last send, for the settings screen.
+	 * Total of the "accepted" counts across the response bodies of one send. A
+	 * missing, non-numeric or negative value counts as 0; numeric strings count.
+	 *
+	 * @param array<int,string> $bodies raw JSON response bodies
 	 */
-	public static function statusLine( int $httpCode, string $body, int $timestamp ): string {
+	public static function sumAccepted( array $bodies ): int {
+		$total = 0;
+		foreach ( $bodies as $body ) {
+			$data = json_decode( (string) $body, true );
+			if ( is_array( $data ) && isset( $data['accepted'] ) && is_numeric( $data['accepted'] ) ) {
+				$total += max( 0, (int) $data['accepted'] );
+			}
+		}
+
+		return $total;
+	}
+
+	/**
+	 * One-line outcome of the last send, for the settings screen.
+	 *
+	 * @param int    $accepted Rows accepted, summed over the send's successful bodies.
+	 * @param string $error    Transport error message, used only when the code is 0.
+	 */
+	public static function statusLine( int $httpCode, string $body, int $timestamp, int $accepted = 0, string $error = '' ): string {
 		$data = json_decode( $body, true );
 		if ( ! is_array( $data ) ) {
 			$data = array();
 		}
 
 		if ( 200 === $httpCode ) {
-			$accepted = isset( $data['accepted'] ) && is_numeric( $data['accepted'] ) ? (int) $data['accepted'] : 0;
-
 			return 'Sent ' . $accepted . ' rows at ' . gmdate( 'H:i', $timestamp ) . ' UTC';
 		}
 
@@ -205,7 +241,7 @@ final class Tracker {
 		}
 
 		if ( 0 === $httpCode ) {
-			return 'Could not reach Referenced.';
+			return '' !== $error ? 'Could not reach Referenced: ' . $error : 'Could not reach Referenced.';
 		}
 
 		return 'HTTP ' . $httpCode;

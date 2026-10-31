@@ -15,6 +15,17 @@ it('maps real crawler user agents to slugs', function (string $ua, string $slug)
     ['Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', 'googlebot'],
     ['Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)', 'bingbot'],
     ['meta-externalagent/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)', 'meta-externalagent'],
+    ['Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; OAI-AdsBot/1.0; +https://openai.com/bot', 'oai-adsbot'],
+    ['Mozilla/5.0 (compatible; Claude-User/1.0; +Claude-User@anthropic.com)', 'claude-user'],
+    ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Safari/605.1.15 (Applebot/0.1; +http://www.apple.com/go/applebot)', 'applebot'],
+    ['Mozilla/5.0 (compatible; Bravebot/1.0; +https://search.brave.com/help/brave-search-crawler)', 'bravebot'],
+    ['Mozilla/5.0 (compatible; Amazonbot/0.1; +https://developer.amazon.com/support/amazonbot)', 'amazonbot'],
+    ['meta-webindexer/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/web-crawlers)', 'meta-webindexer'],
+    ['meta-externalfetcher/1.1', 'meta-externalfetcher'],
+    ['Mozilla/5.0 (Linux; Android 5.0) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Safari/537.36 (compatible; Bytespider; spider-feedback@bytedance.com)', 'bytespider'],
+    ['cohere-ai', 'cohere-ai'],
+    ['Mozilla/5.0 (compatible; Diffbot/0.1; +http://www.diffbot.com)', 'diffbot'],
+    ['CCBot/2.0 (https://commoncrawl.org/faq/)', 'ccbot'],
 ]);
 
 it('returns null for browsers and empty agents', function (string $ua) {
