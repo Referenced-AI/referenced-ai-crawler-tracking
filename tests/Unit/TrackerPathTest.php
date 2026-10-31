@@ -16,6 +16,8 @@ it('excludes WordPress-owned paths', function (string $path, bool $excluded) {
     ['/wp-login.php', true],
     ['/wp-json/wp/v2/posts', true],
     ['/wp-admin/admin-ajax.php', true],
+    ['/wp-json', true],
+    ['/wp-admin', true],
     ['/xmlrpc.php', true],
     ['/wp-cron.php', true],
     ['/blog/wp-json-is-my-slug', false],
