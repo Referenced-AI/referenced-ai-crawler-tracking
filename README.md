@@ -1,5 +1,7 @@
 # Referenced – AI Crawler Tracking
 
+[![License: GPL v2+](https://img.shields.io/badge/license-GPL--2.0--or--later-blue.svg)](LICENSE)
+
 WordPress plugin that counts visits from known AI crawlers and posts hourly day totals to Referenced.
 
 It is a reporter only: it writes nothing to your pages, and records no visitor data (no IP addresses, cookies or user accounts). For each known crawler it keeps a count per bot, path and day in one small table of its own. You need a [Referenced](https://getreferenced.ai) account and a connection token; until a token is saved, nothing is sent anywhere.
