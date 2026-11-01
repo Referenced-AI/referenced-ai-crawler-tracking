@@ -95,7 +95,7 @@ class Settings {
 
 	public static function renderWidget() {
 		global $wpdb;
-		$table     = referenced_table();
+		$table     = esc_sql( referenced_table() );
 		$connected = '' !== (string) get_option( 'referenced_token', '' );
 		$hits      = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- plugin-owned custom table; dashboard needs current counts.
 			$wpdb->prepare(
@@ -328,7 +328,7 @@ class Settings {
 	 */
 	private static function renderCounts() {
 		global $wpdb;
-		$table = referenced_table();
+		$table = esc_sql( referenced_table() );
 		$since = Tracker::pruneCutoff( time() );
 		$names = Tracker::vocabulary( get_option( 'referenced_bots' ) );
 

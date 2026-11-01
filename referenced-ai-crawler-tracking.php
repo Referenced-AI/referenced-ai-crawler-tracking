@@ -108,7 +108,7 @@ function referenced_record_hit() {
 	}
 
 	global $wpdb;
-	$table = referenced_table();
+	$table = esc_sql( referenced_table() );
 	$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- plugin-owned custom table; write-only counters, caching would be wrong.
 		$wpdb->prepare(
 			"INSERT INTO {$table} (date, bot, path, count) VALUES (%s, %s, %s, 1) ON DUPLICATE KEY UPDATE count = count + 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -129,7 +129,7 @@ add_action( 'template_redirect', 'referenced_record_hit', 1 );
  */
 function referenced_send_hits() {
 	global $wpdb;
-	$table = referenced_table();
+	$table = esc_sql( referenced_table() );
 
 	$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- plugin-owned custom table; write-only counters, caching would be wrong.
 		$wpdb->prepare(
