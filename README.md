@@ -1,6 +1,6 @@
 # Referenced – AI Crawler Tracking
 
-[![License: GPL v2+](https://img.shields.io/badge/license-GPL--2.0--or--later-blue.svg)](LICENSE)
+[![CI](https://github.com/Referenced-AI/referenced-ai-crawler-tracking/actions/workflows/ci.yml/badge.svg)](https://github.com/Referenced-AI/referenced-ai-crawler-tracking/actions/workflows/ci.yml) [![License: GPL v2+](https://img.shields.io/badge/license-GPL--2.0--or--later-blue.svg)](LICENSE)
 
 WordPress plugin that counts visits from known AI crawlers and posts hourly day totals to Referenced.
 
