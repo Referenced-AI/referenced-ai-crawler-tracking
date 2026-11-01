@@ -23,8 +23,9 @@ SRC="$(mktemp -d)"
 trap 'rm -rf "$STAGE" "$SRC"' EXIT
 git archive HEAD | tar -x -C "$SRC"
 mkdir "$STAGE/$SLUG"
-(cd "$SRC" && cp "$SLUG.php" uninstall.php readme.txt LICENSE "$STAGE/$SLUG/")
+(cd "$SRC" && cp "$SLUG.php" uninstall.php readme.txt LICENSE THIRD-PARTY-NOTICES.txt "$STAGE/$SLUG/")
 cp -R "$SRC/src" "$STAGE/$SLUG/src"
+cp -R "$SRC/assets" "$STAGE/$SLUG/assets"
 
 rm -f "$ROOT/$SLUG.zip"
 (cd "$STAGE" && zip -qr -X "$ROOT/$SLUG.zip" "$SLUG")

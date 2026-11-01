@@ -14,4 +14,6 @@ foreach ( array( 'referenced_token', 'referenced_enabled', 'referenced_bots', 'r
 	delete_option( $referenced_option );
 }
 
+delete_metadata( 'user', 0, 'referenced_dismissed_connect_notice', '', true );
+
 wp_clear_scheduled_hook( 'referenced_send_hits' );

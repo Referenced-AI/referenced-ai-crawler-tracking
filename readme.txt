@@ -59,6 +59,13 @@ This plugin sends crawler visit totals to Referenced (getreferenced.ai), the ser
 Privacy policy: https://getreferenced.ai/privacy
 Terms of service: https://getreferenced.ai/terms
 
+== Credits ==
+
+* Geist and Geist Mono fonts, SIL Open Font License 1.1 (see assets/fonts/OFL.txt).
+* Interface icons from Heroicons, MIT licence, copyright Tailwind Labs, Inc.
+* AI company logos from Lobe Icons, MIT licence, copyright 2023 LobeHub; the Amazon mark is from Simple Icons, CC0.
+* Full notices are in THIRD-PARTY-NOTICES.txt. The logos belong to their respective owners and are used only to identify those crawlers.
+
 == Changelog ==
 
 = 1.0.0 =
