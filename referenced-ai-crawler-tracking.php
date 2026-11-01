@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Referenced – AI Crawler Tracking
- * Plugin URI: https://getreferenced.ai
+ * Plugin URI: https://github.com/Referenced-AI/referenced-ai-crawler-tracking
  * Description: Counts visits from known AI crawlers and reports daily totals to Referenced.
  * Version: 1.0.0
  * Requires at least: 6.0
