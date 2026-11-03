@@ -8,7 +8,7 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Counts visits from known AI crawlers and reports daily totals to Referenced.
+See which AI crawlers (GPTBot, ClaudeBot, PerplexityBot and more) read which pages of your site. No visitor data, no front-end changes.
 
 == Description ==
 
