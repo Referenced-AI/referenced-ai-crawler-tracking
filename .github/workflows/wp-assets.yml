@@ -1,0 +1,59 @@
+name: wordpress.org readme and images
+
+# A push to main that changes readme.txt or .wordpress-org/ updates the live
+# listing without a new version: readme.txt into trunk and the Stable tag's
+# folder, .wordpress-org/ into SVN assets/ (icon, banner, screenshots).
+# SVN assets/ mirrors .wordpress-org/: images uploaded to SVN by hand are
+# removed on the next run.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - readme.txt
+      - .wordpress-org/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Shared with release.yml so the two never commit to SVN at once.
+concurrency:
+  group: wordpress-org-svn
+  cancel-in-progress: false
+
+env:
+  SLUG: referenced-ai-crawler-tracking
+
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Subversion
+        run: command -v svn || (sudo apt-get update -q && sudo apt-get install -yq subversion)
+
+      # A version bump commit names a Stable tag SVN does not have yet;
+      # pushing that readme would make wordpress.org serve trunk under the
+      # new number. release.yml publishes the readme with the tag instead.
+      - name: Skip unless the Stable tag is already in SVN
+        id: stable
+        run: |
+          set -euo pipefail
+          STABLE="$(sed -n 's/^Stable tag:[[:space:]]*\(.*[^[:space:]]\)[[:space:]]*$/\1/p' readme.txt | head -n1)"
+          if svn ls "https://plugins.svn.wordpress.org/$SLUG/tags/$STABLE/" >/dev/null 2>&1; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::tags/$STABLE is not in SVN yet; the Release workflow will publish this readme"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update readme and images on wordpress.org
+        if: steps.stable.outputs.publish == 'true'
+        uses: 10up/action-wordpress-plugin-asset-update@2480306f6f693672726d08b5917ea114cb2825f7 # 2.2.0
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          IGNORE_OTHER_FILES: true
+          SKIP_ASSETS: ${{ hashFiles('.wordpress-org/**') == '' }}

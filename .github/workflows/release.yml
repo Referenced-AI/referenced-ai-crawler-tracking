@@ -1,0 +1,75 @@
+name: Release
+
+# Pushing a version tag (v1.0.1) publishes that version to wordpress.org SVN
+# (trunk plus tags/<version>) and attaches the zip to a GitHub release.
+# Before tagging: bump "Version:" in the plugin header and "Stable tag:" in
+# readme.txt, and add a "= <version> =" changelog entry.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+# Shared with wp-assets.yml so the two never commit to SVN at once.
+concurrency:
+  group: wordpress-org-svn
+  cancel-in-progress: false
+
+env:
+  SLUG: referenced-ai-crawler-tracking
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check the tag, plugin header, Stable tag and changelog agree
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME#v}"
+          HEADER="$(sed -n 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*\(.*[^[:space:]]\)[[:space:]]*$/\1/p' "$SLUG.php" | head -n1)"
+          STABLE="$(sed -n 's/^Stable tag:[[:space:]]*\(.*[^[:space:]]\)[[:space:]]*$/\1/p' readme.txt | head -n1)"
+          echo "tag=$TAG header=$HEADER stable=$STABLE"
+          [ "$TAG" = "$HEADER" ] || { echo "::error::Tag $TAG does not match plugin header Version $HEADER"; exit 1; }
+          [ "$TAG" = "$STABLE" ] || { echo "::error::Tag $TAG does not match readme Stable tag $STABLE"; exit 1; }
+          grep -qxF "= $TAG =" readme.txt || { echo "::error::readme.txt has no '= $TAG =' changelog entry"; exit 1; }
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::Tag is not on main"; exit 1; }
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: vendor/bin/pest --compact
+
+      - name: Build the zip and unpack it as the SVN source
+        run: |
+          set -euo pipefail
+          bin/build-zip
+          unzip -q "$SLUG.zip" -d "$RUNNER_TEMP/build"
+          test -f "$RUNNER_TEMP/build/$SLUG/readme.txt"
+
+      - name: Install Subversion
+        run: command -v svn || (sudo apt-get update -q && sudo apt-get install -yq subversion)
+
+      - name: Publish to wordpress.org
+        uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          BUILD_DIR: ${{ runner.temp }}/build/referenced-ai-crawler-tracking
+
+      - name: GitHub release with the same zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$SLUG.zip" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$SLUG.zip" --title "$GITHUB_REF_NAME" --notes "See the changelog in readme.txt."
+          fi
