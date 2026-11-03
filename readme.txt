@@ -16,7 +16,7 @@ Referenced – AI Crawler Tracking counts visits from known AI crawlers, such as
 
 The plugin is a reporter only. It writes nothing to your pages or content, and it records no visitor data: no IP addresses, cookies or user accounts. For each known crawler it keeps a count per bot, path and day in one small table of its own.
 
-You need a Referenced account (getreferenced.ai) and a connection token. Until you save a token, nothing is sent anywhere.
+You need a [Referenced](https://getreferenced.ai) account and a connection token. Until you save a token, nothing is sent anywhere.
 
 == Installation ==
 
@@ -49,15 +49,15 @@ Yes. Use Disconnect on Settings → Referenced to remove the token and stop all 
 
 == External Services ==
 
-This plugin sends crawler visit totals to Referenced (getreferenced.ai), the service whose account you connect it to.
+This plugin sends crawler visit totals to [Referenced](https://getreferenced.ai), the service whose account you connect it to.
 
-* Service: Referenced (getreferenced.ai)
+* Service: [Referenced](https://getreferenced.ai)
 * Endpoint: https://getreferenced.ai/api/ingest/bot-hits
 * What is sent: the bot name, the page path, the date, the visit count, the plugin version, the WordPress version and your site's home URL.
 * When: once an hour, and when you press "Send now" on Settings → Referenced. Nothing is sent until a connection token has been saved.
 
-Privacy policy: https://getreferenced.ai/privacy
-Terms of service: https://getreferenced.ai/terms
+Privacy policy: [getreferenced.ai/privacy](https://getreferenced.ai/privacy)
+Terms of service: [getreferenced.ai/terms](https://getreferenced.ai/terms)
 
 == Credits ==
 
