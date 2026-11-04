@@ -12,16 +12,16 @@ See which AI crawlers (GPTBot, ClaudeBot, PerplexityBot and more) read which pag
 
 == Description ==
 
-Referenced – AI Crawler Tracking counts visits from known AI crawlers, such as GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot and Googlebot, and posts hourly day totals to your Referenced account. You can then see which AI engines are reading which pages of your site.
+Referenced – AI Crawler Tracking counts visits from known AI crawlers, such as GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot and Googlebot, and posts hourly day totals to your Referenced AI account. You can then see which AI engines are reading which pages of your site.
 
 The plugin is a reporter only. It writes nothing to your pages or content, and it records no visitor data: no IP addresses, cookies or user accounts. For each known crawler it keeps a count per bot, path and day in one small table of its own.
 
-You need a [Referenced](https://getreferenced.ai) account and a connection token. Until you save a token, nothing is sent anywhere.
+You need a [Referenced AI](https://getreferenced.ai) account and a connection token. Until you save a token, nothing is sent anywhere.
 
 == Installation ==
 
 1. Upload the plugin zip under Plugins → Add New → Upload Plugin, or install it from Plugins → Add New once it is listed. Then activate it.
-2. In Referenced, open Settings → Connections and create a WordPress token.
+2. In Referenced AI, open Settings → Connections and create a WordPress token.
 3. In WordPress, open Settings → Referenced and paste the token.
 4. The first report arrives within about an hour of your site's next visits (WordPress runs scheduled tasks on traffic). Use "Send now" in Settings → Referenced to send at once.
 
@@ -55,9 +55,9 @@ Yes. Use Disconnect on Settings → Referenced to remove the token and stop all 
 
 == External Services ==
 
-This plugin sends crawler visit totals to [Referenced](https://getreferenced.ai), the service whose account you connect it to.
+This plugin sends crawler visit totals to [Referenced AI](https://getreferenced.ai), the service whose account you connect it to.
 
-* Service: [Referenced](https://getreferenced.ai)
+* Service: [Referenced AI](https://getreferenced.ai)
 * Endpoint: https://getreferenced.ai/api/ingest/bot-hits
 * What is sent: the bot name, the page path, the date, the visit count, the plugin version, the WordPress version and your site's home URL.
 * When: once an hour, and when you press "Send now" on Settings → Referenced. Nothing is sent until a connection token has been saved.
