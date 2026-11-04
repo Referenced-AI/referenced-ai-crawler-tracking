@@ -47,6 +47,12 @@ With plain permalinks (`/?p=123`) the page is identified by its query string, an
 
 Yes. Use Disconnect on Settings → Referenced to remove the token and stop all reporting, or deactivate the plugin. Deleting the plugin removes its table and options.
 
+== Screenshots ==
+
+1. Settings → Referenced: what the plugin sends, your connection status, and the AI crawlers that visited in the last 7 days.
+2. Every AI crawler that visited in the last 7 days, with its visits and how many pages it read.
+3. The dashboard widget: AI crawler visits this week at a glance.
+
 == External Services ==
 
 This plugin sends crawler visit totals to [Referenced](https://getreferenced.ai), the service whose account you connect it to.
